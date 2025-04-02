@@ -39,7 +39,7 @@ function preload() {
   //creacion de sprit de un enemigo con sus frames
   this.load.spritesheet(
     'monster',
-    './2D Pixel Dungeon Asset Pack/character and tileset/Dungeon_Character_2.png',
+    './2D Pixel Dungeon Asset Pack/Character_animation/monsters_idle/skeleton2/v1/skeleton2_v1_1.png',
     { frameWidth: 16, frameHeight: 16 }
   );
 }
@@ -113,11 +113,11 @@ function create() {
     repeat: -1
   });
 
-  monster.play('monster-walk');
-  monster.setVelocityX(-50); // Velocidad negativa para ir a la izquierda
-  monster.setCollideWorldBounds(true); // Evita que salga del mundo
-  monster.setBounce(1); // Rebota al chocar con los bordes
-  monster.setFlipX(true) // para que el enemigo aparezca de manera inversa
+  this.monster.play('monster-walk');
+  this.monster.setVelocityX(-50); // Velocidad negativa para ir a la izquierda
+  this.monster.setCollideWorldBounds(true); // Evita que salga del mundo
+  this.monster.setBounce(1); // Rebota al chocar con los bordes
+  this.monster.setFlipX(true) // para que el enemigo aparezca de manera inversa
 }
 
 function update() {
@@ -159,11 +159,11 @@ function update() {
     }
   }
   // si el enemigo toca el borde cambia de direccion
-  if(monster.body.blocked.right) {
-    monster.setVelocityX(-50);
-    monster.setFlipX(true);
-  } else if (monster.body.blocked.left) {
-    monster.setVelocityX(50);
-    monster.setFlipX(false);
+  if(this.monster.body.blocked.right) {
+    this.monster.setVelocityX(-50);
+    this.monster.setFlipX(true);
+  } else if (this.monster.body.blocked.left) {
+    this.monster.setVelocityX(50);
+    this.monster.setFlipX(false);
   }
 }
