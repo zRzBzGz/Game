@@ -35,6 +35,13 @@ function preload() {
     './oak_woods_v1.0/character/char_blue.png',
     { frameWidth: 56, frameHeight: 56 }
   );
+
+  //creacion de sprit de un enemigo con sus frames
+  this.load.spritesheet(
+    'monster',
+    './Character_animation/monsters_idle/skeleton1/v1/skeleton_v1_1.png',
+    { frameWidth: 16, frameHeight: 16 }
+  );
 }
 
 function create() {
