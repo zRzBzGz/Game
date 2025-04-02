@@ -68,12 +68,25 @@ function create() {
   this.physics.add.collider(this.hero, this.floor);
 
   // Agreacion de enemigo con fisicas
-  this.monster = this.physics.add.sprite(450, 300, 'monster')
-  .setOrigin(0, 1)
-  .setScale(2,3);
+  let monster = this.physics.add.sprite(450, 300, 'monster')
 
   // Colision entre el enemigo y el suelo
   this.physics.add.collider(this.monster, this.floor);
+
+  // animacion de caminar del enemigo
+
+  this.anims.create({
+    key: 'monster-walk',
+    frames: this.anims.generateFrameNumbers('monster', { start: 24, end: 29 }),
+    frameRate: 10,
+    repeat: -1
+  });
+
+  monster.play('monster-walk');
+  monster.setVelocityX(-50); // Velocidad negativa para ir a la izquierda
+  monster.setCollideWorldBounds(true); // Evita que salga del mundo
+  monster.setBounce(1); // Rebota al chocar con los bordes
+  monster.setFlipX(true) // para que el enemigo aparezca de manera inversa
 
   // Crear animaciones
   this.anims.create({
@@ -140,5 +153,13 @@ function update() {
     if (!this.hero.anims.isPlaying || this.hero.anims.currentAnim.key !== 'hero-jump') {
       this.hero.anims.play('hero-jump', true);
     }
+  }
+  // si el enemigo toca el borde cambia de direccion
+  if(monster.body.blocked.right) {
+    monster.setVelocityX(-50);
+    monster.setFlipX(true);
+  } else if (monster.body.blocked.left) {
+    monster.setVelocityX(50);
+    monster.setFlipX(false);
   }
 }
