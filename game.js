@@ -68,7 +68,9 @@ function create() {
   this.physics.add.collider(this.hero, this.floor);
 
   // Agreacion de enemigo con fisicas
-  let monster = this.physics.add.sprite(450, 300, 'monster')
+  this.monster = this.physics.add.sprite(450, 300, 'monster')
+  .setOrigin(0, 1)
+  .setScale(2,3);
 
   // Colision entre el enemigo y el suelo
   this.physics.add.collider(this.monster, this.floor);
