@@ -39,7 +39,7 @@ function preload() {
   //creacion de sprit de un enemigo con sus frames
   this.load.spritesheet(
     'monster',
-    './2D Pixel Dungeon Asset Pack/Character_animation/monsters_idle/skeleton2/v1/skeleton2_v1_1.png',
+    './2D Pixel Dungeon Asset Pack/character and tileset/Dungeon_Character.png',
     { frameWidth: 16, frameHeight: 16 }
   );
 }
@@ -95,7 +95,8 @@ function create() {
   // Configurar la cámara para seguir al héroe
   this.cameras.main.startFollow(this.hero, true, 0.1, 0.1);  // Suaviza el movimiento de la cámara
   this.cameras.main.setBounds(0, 0, 2000, 500);  // Establece los límites de la cámara
-  
+
+
   // Agreacion de enemigo con fisicas
   this.monster = this.physics.add.sprite(450, 300, 'monster')
   .setOrigin(0, 1)
@@ -108,9 +109,9 @@ function create() {
 
   this.anims.create({
     key: 'monster-walk',
-    frames: this.anims.generateFrameNumbers('monster', { start: 2, end: 29 }),
+    frames: this.anims.generateFrameNumbers('monster', { start: 2, end: 3 }),
     frameRate: 10,
-    repeat: -1
+    repeat: 0
   });
 
   this.monster.play('monster-walk');
