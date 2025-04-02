@@ -55,7 +55,8 @@ function create() {
   // Agrega el personaje con físicas activadas.
   this.hero = this.physics.add.sprite(100, 350, 'hero')
     .setOrigin(0, 1) // Ajusta el punto de origen en la parte inferior.
-    .setScale(1.5); // Escala el sprite para hacerlo más grande.
+    .setScale(1.5) // Escala el sprite para hacerlo más grande.
+    //.setCollideWorldBounds(true);
 
   // Habilita la colisión entre el personaje y el suelo.
   this.physics.add.collider(this.hero, this.floor);
@@ -82,6 +83,14 @@ function create() {
     repeat: 0 // No se repite, solo se ejecuta una vez por cada salto.
   });
 
+  // DEfinir la animacion muerte
+  this.anims.create({
+    key: 'hero-dead',
+    frames: this.anims.generateFrameNumbers('hero', { start: 39, end: 48 }), // Rango de frames de la animación de salto.
+    frameRate: 11, // Velocidad de la animación.
+    repeat: 0
+  });
+  this.hero.isDead = false;
   // Captura las teclas de flecha para los controles.
   this.keys = this.input.keyboard.createCursorKeys();
 
@@ -93,6 +102,7 @@ function create() {
 function update() {
   let isOnGround = this.hero.body.blocked.down; // Verifica si el personaje está tocando el suelo.
 
+  if (this.hero.isDead) return
   // Movimiento lateral hacia la izquierda.
   if (this.keys.left.isDown) {
     this.hero.setVelocityX(-160); // Aplica velocidad negativa en X para moverse a la izquierda.
@@ -129,4 +139,14 @@ function update() {
       this.hero.anims.play('hero-jump', true);
     }
   }
+  // Muerte del personaje
+  if (this.hero.y >= config.height){
+    this.hero.isDead = true;
+    this.hero.setVelocity(0, 0);
+    this.hero.anims.play('hero-dead');
+    this.time.delayedCall(1000, () => {
+      this.scene.restart(); 
+
+    });
+}
 }
