@@ -67,6 +67,11 @@ function create() {
   // Colisión entre el héroe y el suelo
   this.physics.add.collider(this.hero, this.floor);
 
+  // Agreacion de enemigo con fisicas
+  this.monster = this.physics.add.sprite(160, 200, 'monster')
+  .setOrigin(0, 1)
+  .setScale(1);
+
   // Crear animaciones
   this.anims.create({
     key: 'hero-walk',
