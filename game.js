@@ -39,7 +39,7 @@ function preload() {
   //creacion de sprit de un enemigo con sus frames
   this.load.spritesheet(
     'monster',
-    './Character_animation/monsters_idle/skeleton1/v1/skeleton_v1_1.png',
+    './2D Pixel Dungeon Asset Pack/Character_animation/monsters_idle/skeleton1/v1/skeleton_v1_2.png',
     { frameWidth: 16, frameHeight: 16 }
   );
 }
