@@ -67,28 +67,7 @@ function create() {
   // Colisión entre el héroe y el suelo
   this.physics.add.collider(this.hero, this.floor);
 
-  // Agreacion de enemigo con fisicas
-  this.monster = this.physics.add.sprite(450, 300, 'monster')
-  .setOrigin(0, 1)
-  .setScale(2,3);
 
-  // Colision entre el enemigo y el suelo
-  this.physics.add.collider(this.monster, this.floor);
-
-  // animacion de caminar del enemigo
-
-  this.anims.create({
-    key: 'monster-walk',
-    frames: this.anims.generateFrameNumbers('monster', { start: 24, end: 29 }),
-    frameRate: 10,
-    repeat: -1
-  });
-
-  monster.play('monster-walk');
-  monster.setVelocityX(-50); // Velocidad negativa para ir a la izquierda
-  monster.setCollideWorldBounds(true); // Evita que salga del mundo
-  monster.setBounce(1); // Rebota al chocar con los bordes
-  monster.setFlipX(true) // para que el enemigo aparezca de manera inversa
 
   // Crear animaciones
   this.anims.create({
@@ -116,6 +95,29 @@ function create() {
   // Configurar la cámara para seguir al héroe
   this.cameras.main.startFollow(this.hero, true, 0.1, 0.1);  // Suaviza el movimiento de la cámara
   this.cameras.main.setBounds(0, 0, 2000, 500);  // Establece los límites de la cámara
+  
+  // Agreacion de enemigo con fisicas
+  this.monster = this.physics.add.sprite(450, 300, 'monster')
+  .setOrigin(0, 1)
+  .setScale(2,3);
+
+  // Colision entre el enemigo y el suelo
+  this.physics.add.collider(this.monster, this.floor);
+
+  // animacion de caminar del enemigo
+
+  this.anims.create({
+    key: 'monster-walk',
+    frames: this.anims.generateFrameNumbers('monster', { start: 2, end: 29 }),
+    frameRate: 10,
+    repeat: -1
+  });
+
+  monster.play('monster-walk');
+  monster.setVelocityX(-50); // Velocidad negativa para ir a la izquierda
+  monster.setCollideWorldBounds(true); // Evita que salga del mundo
+  monster.setBounce(1); // Rebota al chocar con los bordes
+  monster.setFlipX(true) // para que el enemigo aparezca de manera inversa
 }
 
 function update() {
