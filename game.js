@@ -31,6 +31,10 @@ function preload() {
     frameWidth: 16,
     frameHeight: 16
   });
+  this.load.spritesheet('monster2', 'Monster_Creatures_Fantasy(Version 1.3)\Skeleton\Attack3.png', {
+    frameWidth: 16,
+    frameHeight: 16
+  });
 }
 
 function create() {
