@@ -19,44 +19,54 @@ new Phaser.Game(config);
 
 function preload() {
   this.load.image('background', './oak_woods_v1.0/background/background_layer_1.png');
-
   this.load.spritesheet('suelo', './LEGACY/Assets/Hive.png', {
     frameWidth: 80,
     frameHeight: 64
   });
-
   this.load.spritesheet('hero', './oak_woods_v1.0/character/char_blue.png', {
     frameWidth: 56,
     frameHeight: 56
   });
-
   this.load.spritesheet('monster', './2D Pixel Dungeon Asset Pack/character and tileset/Dungeon_Character.png', {
+    frameWidth: 16,
+    frameHeight: 16
+  });
+  this.load.spritesheet('monster2', 'Monster_Creatures_Fantasy(Version 1.3)\Skeleton\Attack3.png', {
     frameWidth: 16,
     frameHeight: 16
   });
 }
 
 function create() {
-  this.add.image(0, 0, 'background')
-    .setOrigin(0, 0)
-    .setDisplaySize(this.sys.game.config.width, this.sys.game.config.height);
+  // Ajustar el fondo para que cubra toda la pantalla
+  this.background = this.add.image(0, 0, 'background')
+    .setOrigin(0, 0)  // Asegurarnos de que el fondo empiece en la esquina superior izquierda
+    .setDisplaySize(this.sys.game.config.width, this.sys.game.config.height);  // Ajustar el tamaño del fondo
 
+  // Hacer que el fondo no se mueva con la cámara
+  this.background.setScrollFactor(0); // Esto lo mantiene fijo, aunque la cámara se mueva
+
+  // Crear el suelo
   this.floor = this.physics.add.staticGroup();
 
-  for (let i = 0; i < 7; i++) {
+  // Generar suelos con un hueco entre el bloque 10 y 11
+  for (let i = 0; i < 30; i++) {
+    if (i === 10 || i === 11) continue; // HUECO para saltar
+
     this.floor.create(i * 80, 500, 'suelo')
       .setOrigin(0, 1)
-      .setScale(1);
+      .setScale(1)
+      .refreshBody();
   }
 
   this.hero = this.physics.add.sprite(100, 350, 'hero')
     .setOrigin(0, 1)
     .setScale(1.5);
   this.hero.isDead = false;
+  this.hero.isAttacking = false;
 
-  // Ajustar la caja de colisión del héroe
-  this.hero.body.setSize(30, 50);     // Ajustar tamaño de hitbox
-  this.hero.body.setOffset(10, 6);    // Centrar la hitbox
+  this.hero.body.setSize(30, 50);
+  this.hero.body.setOffset(10, 6);
 
   this.physics.add.collider(this.hero, this.floor);
 
@@ -65,12 +75,16 @@ function create() {
     .setBounce(0)
     .setCollideWorldBounds(true)
     .setVelocityX(50);
+  this.monster.isDead = false;
 
   this.physics.add.collider(this.monster, this.floor);
 
-  // Colisión entre héroe y monstruo
-  this.physics.add.collider(this.hero, this.monster, () => {
-    if (!this.hero.isDead) {
+  // ⚔️ Colisión lógica de ataque
+  this.physics.add.overlap(this.hero, this.monster, () => {
+    if (this.hero.isAttacking && !this.monster.isDead) {
+      this.monster.isDead = true;
+      this.monster.disableBody(true, true);
+    } else if (!this.hero.isDead && !this.monster.isDead) {
       this.hero.isDead = true;
       this.hero.setVelocity(0, 0);
       this.hero.anims.play('hero-dead');
@@ -80,6 +94,7 @@ function create() {
     }
   }, null, this);
 
+  // Animaciones
   this.anims.create({
     key: 'hero-walk',
     frames: this.anims.generateFrameNumbers('hero', { start: 17, end: 23 }),
@@ -106,7 +121,15 @@ function create() {
     repeat: 0
   });
 
+  this.anims.create({
+    key: 'hero-attack',
+    frames: this.anims.generateFrameNumbers('hero', { start: 8, end: 12 }),
+    frameRate: 11,
+    repeat: 0
+  });
+
   this.keys = this.input.keyboard.createCursorKeys();
+  this.attackKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
 
   this.cameras.main.startFollow(this.hero, true, 0.1, 0.1);
   this.cameras.main.setBounds(0, 0, 2000, 500);
@@ -114,40 +137,33 @@ function create() {
 
 function update() {
   let isOnGround = this.hero.body.blocked.down;
-
   if (this.hero.isDead) return;
 
+  // Movimiento lateral
   if (this.keys.left.isDown) {
     this.hero.setVelocityX(-160);
-    if (isOnGround) {
-      this.hero.anims.play('hero-walk', true);
-    }
+    if (isOnGround) this.hero.anims.play('hero-walk', true);
     this.hero.setFlipX(true);
   } else if (this.keys.right.isDown) {
     this.hero.setVelocityX(160);
-    if (isOnGround) {
-      this.hero.anims.play('hero-walk', true);
-    }
+    if (isOnGround) this.hero.anims.play('hero-walk', true);
     this.hero.setFlipX(false);
   } else {
     this.hero.setVelocityX(0);
-    if (isOnGround) {
-      this.hero.anims.play('hero-idle', true);
-    }
+    if (isOnGround) this.hero.anims.play('hero-idle', true);
   }
 
+  // Salto
   if (this.keys.up.isDown && isOnGround) {
     this.hero.setVelocityY(-300);
     this.hero.anims.play('hero-jump', true);
   }
 
-  if (!isOnGround) {
-    if (!this.hero.anims.isPlaying || this.hero.anims.currentAnim.key !== 'hero-jump') {
-      this.hero.anims.play('hero-jump', true);
-    }
+  if (!isOnGround && (!this.hero.anims.isPlaying || this.hero.anims.currentAnim.key !== 'hero-jump')) {
+    this.hero.anims.play('hero-jump', true);
   }
 
-  // Movimiento automático del monstruo
+  // Movimiento del monstruo
   if (this.monster.body.blocked.right) {
     this.monster.setVelocityX(-50);
     this.monster.setFlipX(true);
@@ -156,7 +172,62 @@ function update() {
     this.monster.setFlipX(false);
   }
 
-  // Muerte del personaje si cae al vacío
+  // Muerte al caer
+  // Ataque
+  if (Phaser.Input.Keyboard.JustDown(this.attackKey) && !this.hero.isAttacking) {
+    this.hero.isAttacking = true;
+    this.hero.setVelocityX(0);
+    this.hero.anims.play('hero-attack', true);
+
+    this.hero.once('animationcomplete-hero-attack', () => {
+      this.hero.isAttacking = false;
+    });
+    return; // Evita que se sigan procesando otras animaciones
+  }
+
+  // Movimiento
+  if (!this.hero.isAttacking) {
+    if (this.keys.left.isDown) {
+      this.hero.setVelocityX(-160);
+      if (isOnGround) {
+        this.hero.anims.play('hero-walk', true);
+      }
+      this.hero.setFlipX(true);
+    } else if (this.keys.right.isDown) {
+      this.hero.setVelocityX(160);
+      if (isOnGround) {
+        this.hero.anims.play('hero-walk', true);
+      }
+      this.hero.setFlipX(false);
+    } else {
+      this.hero.setVelocityX(0);
+      if (isOnGround) {
+        this.hero.anims.play('hero-idle', true);
+      }
+    }
+
+    if (this.keys.up.isDown && isOnGround) {
+      this.hero.setVelocityY(-300);
+      this.hero.anims.play('hero-jump', true);
+    }
+
+    if (!isOnGround && (!this.hero.anims.isPlaying || this.hero.anims.currentAnim.key !== 'hero-jump')) {
+      this.hero.anims.play('hero-jump', true);
+    }
+  }
+
+  // Movimiento automático del monstruo
+  if (!this.monster.isDead) {
+    if (this.monster.body.blocked.right) {
+      this.monster.setVelocityX(-50);
+      this.monster.setFlipX(true);
+    } else if (this.monster.body.blocked.left) {
+      this.monster.setVelocityX(50);
+      this.monster.setFlipX(false);
+    }
+  }
+
+  // Muerte si cae al vacío
   if (this.hero.y >= config.height) {
     this.hero.isDead = true;
     this.hero.setVelocity(0, 0);
