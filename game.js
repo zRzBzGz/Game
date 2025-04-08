@@ -19,17 +19,14 @@ new Phaser.Game(config);
 
 function preload() {
   this.load.image('background', './oak_woods_v1.0/background/background_layer_1.png');
-
   this.load.spritesheet('suelo', './LEGACY/Assets/Hive.png', {
     frameWidth: 80,
     frameHeight: 64
   });
-
   this.load.spritesheet('hero', './oak_woods_v1.0/character/char_blue.png', {
     frameWidth: 56,
     frameHeight: 56
   });
-
   this.load.spritesheet('monster', './2D Pixel Dungeon Asset Pack/character and tileset/Dungeon_Character.png', {
     frameWidth: 16,
     frameHeight: 16
@@ -37,16 +34,25 @@ function preload() {
 }
 
 function create() {
-  this.add.image(0, 0, 'background')
-    .setOrigin(0, 0)
-    .setDisplaySize(this.sys.game.config.width, this.sys.game.config.height);
+  // Ajustar el fondo para que cubra toda la pantalla
+  this.background = this.add.image(0, 0, 'background')
+    .setOrigin(0, 0)  // Asegurarnos de que el fondo empiece en la esquina superior izquierda
+    .setDisplaySize(this.sys.game.config.width, this.sys.game.config.height);  // Ajustar el tamaño del fondo
 
+  // Hacer que el fondo no se mueva con la cámara
+  this.background.setScrollFactor(0); // Esto lo mantiene fijo, aunque la cámara se mueva
+
+  // Crear el suelo
   this.floor = this.physics.add.staticGroup();
 
-  for (let i = 0; i < 7; i++) {
+  // Generar suelos con un hueco entre el bloque 10 y 11
+  for (let i = 0; i < 30; i++) {
+    if (i === 10 || i === 11) continue; // HUECO para saltar
+
     this.floor.create(i * 80, 500, 'suelo')
       .setOrigin(0, 1)
-      .setScale(1);
+      .setScale(1)
+      .refreshBody();
   }
 
   this.hero = this.physics.add.sprite(100, 350, 'hero')
@@ -54,9 +60,8 @@ function create() {
     .setScale(1.5);
   this.hero.isDead = false;
 
-  // Ajustar la caja de colisión del héroe
-  this.hero.body.setSize(30, 50);     // Ajustar tamaño de hitbox
-  this.hero.body.setOffset(10, 6);    // Centrar la hitbox
+  this.hero.body.setSize(30, 50);
+  this.hero.body.setOffset(10, 6);
 
   this.physics.add.collider(this.hero, this.floor);
 
@@ -117,37 +122,31 @@ function update() {
 
   if (this.hero.isDead) return;
 
+  // Movimiento lateral
   if (this.keys.left.isDown) {
     this.hero.setVelocityX(-160);
-    if (isOnGround) {
-      this.hero.anims.play('hero-walk', true);
-    }
+    if (isOnGround) this.hero.anims.play('hero-walk', true);
     this.hero.setFlipX(true);
   } else if (this.keys.right.isDown) {
     this.hero.setVelocityX(160);
-    if (isOnGround) {
-      this.hero.anims.play('hero-walk', true);
-    }
+    if (isOnGround) this.hero.anims.play('hero-walk', true);
     this.hero.setFlipX(false);
   } else {
     this.hero.setVelocityX(0);
-    if (isOnGround) {
-      this.hero.anims.play('hero-idle', true);
-    }
+    if (isOnGround) this.hero.anims.play('hero-idle', true);
   }
 
+  // Salto
   if (this.keys.up.isDown && isOnGround) {
     this.hero.setVelocityY(-300);
     this.hero.anims.play('hero-jump', true);
   }
 
-  if (!isOnGround) {
-    if (!this.hero.anims.isPlaying || this.hero.anims.currentAnim.key !== 'hero-jump') {
-      this.hero.anims.play('hero-jump', true);
-    }
+  if (!isOnGround && (!this.hero.anims.isPlaying || this.hero.anims.currentAnim.key !== 'hero-jump')) {
+    this.hero.anims.play('hero-jump', true);
   }
 
-  // Movimiento automático del monstruo
+  // Movimiento del monstruo
   if (this.monster.body.blocked.right) {
     this.monster.setVelocityX(-50);
     this.monster.setFlipX(true);
@@ -156,7 +155,7 @@ function update() {
     this.monster.setFlipX(false);
   }
 
-  // Muerte del personaje si cae al vacío
+  // Muerte al caer
   if (this.hero.y >= config.height) {
     this.hero.isDead = true;
     this.hero.setVelocity(0, 0);
