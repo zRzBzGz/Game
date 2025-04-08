@@ -139,7 +139,6 @@ function update() {
   let isOnGround = this.hero.body.blocked.down;
   if (this.hero.isDead) return;
 
-<<<<<<< HEAD
   // Movimiento lateral
   if (this.keys.left.isDown) {
     this.hero.setVelocityX(-160);
@@ -174,7 +173,6 @@ function update() {
   }
 
   // Muerte al caer
-=======
   // Ataque
   if (Phaser.Input.Keyboard.JustDown(this.attackKey) && !this.hero.isAttacking) {
     this.hero.isAttacking = true;
@@ -230,7 +228,6 @@ function update() {
   }
 
   // Muerte si cae al vacío
->>>>>>> origin/prueba2
   if (this.hero.y >= config.height) {
     this.hero.isDead = true;
     this.hero.setVelocity(0, 0);
