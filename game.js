@@ -38,21 +38,14 @@ function preload() {
 }
 
 function create() {
-  // Ajustar el fondo para que cubra toda la pantalla
   this.background = this.add.image(0, 0, 'background')
-    .setOrigin(0, 0)  // Asegurarnos de que el fondo empiece en la esquina superior izquierda
-    .setDisplaySize(this.sys.game.config.width, this.sys.game.config.height);  // Ajustar el tamaño del fondo
+    .setOrigin(0, 0)
+    .setDisplaySize(this.sys.game.config.width, this.sys.game.config.height);
+  this.background.setScrollFactor(0);
 
-  // Hacer que el fondo no se mueva con la cámara
-  this.background.setScrollFactor(0); // Esto lo mantiene fijo, aunque la cámara se mueva
-
-  // Crear el suelo
   this.floor = this.physics.add.staticGroup();
-
-  // Generar suelos con un hueco entre el bloque 10 y 11
   for (let i = 0; i < 30; i++) {
-    if (i === 10 || i === 11) continue; // HUECO para saltar
-
+    if (i === 10 || i === 11) continue;
     this.floor.create(i * 80, 500, 'suelo')
       .setOrigin(0, 1)
       .setScale(1)
@@ -64,10 +57,8 @@ function create() {
     .setScale(1.5);
   this.hero.isDead = false;
   this.hero.isAttacking = false;
-
   this.hero.body.setSize(30, 50);
   this.hero.body.setOffset(10, 6);
-
   this.physics.add.collider(this.hero, this.floor);
 
   this.monster = this.physics.add.sprite(300, 350, 'monster')
@@ -76,11 +67,12 @@ function create() {
     .setCollideWorldBounds(true)
     .setVelocityX(50);
   this.monster.isDead = false;
-
+  this.monster.body.setSize(16, 16);
+  this.monster.body.setOffset(0, 0);
   this.physics.add.collider(this.monster, this.floor);
 
-  // ⚔️ Colisión lógica de ataque
   this.physics.add.overlap(this.hero, this.monster, () => {
+    console.log('COLISIÓN DETECTADA');
     if (this.hero.isAttacking && !this.monster.isDead) {
       this.monster.isDead = true;
       this.monster.disableBody(true, true);
@@ -94,7 +86,6 @@ function create() {
     }
   }, null, this);
 
-  // Animaciones
   this.anims.create({
     key: 'hero-walk',
     frames: this.anims.generateFrameNumbers('hero', { start: 17, end: 23 }),
@@ -139,71 +130,33 @@ function update() {
   let isOnGround = this.hero.body.blocked.down;
   if (this.hero.isDead) return;
 
-  // Movimiento lateral
-  if (this.keys.left.isDown) {
-    this.hero.setVelocityX(-160);
-    if (isOnGround) this.hero.anims.play('hero-walk', true);
-    this.hero.setFlipX(true);
-  } else if (this.keys.right.isDown) {
-    this.hero.setVelocityX(160);
-    if (isOnGround) this.hero.anims.play('hero-walk', true);
-    this.hero.setFlipX(false);
-  } else {
-    this.hero.setVelocityX(0);
-    if (isOnGround) this.hero.anims.play('hero-idle', true);
-  }
-
-  // Salto
-  if (this.keys.up.isDown && isOnGround) {
-    this.hero.setVelocityY(-300);
-    this.hero.anims.play('hero-jump', true);
-  }
-
-  if (!isOnGround && (!this.hero.anims.isPlaying || this.hero.anims.currentAnim.key !== 'hero-jump')) {
-    this.hero.anims.play('hero-jump', true);
-  }
-
-  // Movimiento del monstruo
-  if (this.monster.body.blocked.right) {
-    this.monster.setVelocityX(-50);
-    this.monster.setFlipX(true);
-  } else if (this.monster.body.blocked.left) {
-    this.monster.setVelocityX(50);
-    this.monster.setFlipX(false);
-  }
-
-  // Muerte al caer
-  // Ataque
+  // ATAQUE (mejorado)
   if (Phaser.Input.Keyboard.JustDown(this.attackKey) && !this.hero.isAttacking) {
+    console.log("¡Ataque activado!");
     this.hero.isAttacking = true;
     this.hero.setVelocityX(0);
     this.hero.anims.play('hero-attack', true);
 
-    this.hero.once('animationcomplete-hero-attack', () => {
+    this.time.delayedCall(300, () => {
       this.hero.isAttacking = false;
     });
-    return; // Evita que se sigan procesando otras animaciones
+
+    return;
   }
 
-  // Movimiento
+  // Movimiento solo si no está atacando
   if (!this.hero.isAttacking) {
     if (this.keys.left.isDown) {
       this.hero.setVelocityX(-160);
-      if (isOnGround) {
-        this.hero.anims.play('hero-walk', true);
-      }
+      if (isOnGround) this.hero.anims.play('hero-walk', true);
       this.hero.setFlipX(true);
     } else if (this.keys.right.isDown) {
       this.hero.setVelocityX(160);
-      if (isOnGround) {
-        this.hero.anims.play('hero-walk', true);
-      }
+      if (isOnGround) this.hero.anims.play('hero-walk', true);
       this.hero.setFlipX(false);
     } else {
       this.hero.setVelocityX(0);
-      if (isOnGround) {
-        this.hero.anims.play('hero-idle', true);
-      }
+      if (isOnGround) this.hero.anims.play('hero-idle', true);
     }
 
     if (this.keys.up.isDown && isOnGround) {
