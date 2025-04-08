@@ -34,6 +34,13 @@ function preload() {
     './oak_woods_v1.0/character/char_blue.png',
     { frameWidth: 56, frameHeight: 56 }
   );
+
+  //creacion de sprit de un enemigo con sus frames
+  this.load.spritesheet(
+    'monster',
+    './2D Pixel Dungeon Asset Pack/character and tileset/Dungeon_Character.png',
+    { frameWidth: 16, frameHeight: 16 }
+  );
 }
 
 function create() {
@@ -60,6 +67,10 @@ function create() {
 
   // Habilita la colisión entre el personaje y el suelo.
   this.physics.add.collider(this.hero, this.floor);
+
+
+
+
 
   // Define la animación de caminar.
   this.anims.create({
@@ -138,6 +149,14 @@ function update() {
     if (!this.hero.anims.isPlaying || this.hero.anims.currentAnim.key !== 'hero-jump') {
       this.hero.anims.play('hero-jump', true);
     }
+  }
+  // si el enemigo toca el borde cambia de direccion
+  if(this.monster.body.blocked.right) {
+    this.monster.setVelocityX(-50);
+    this.monster.setFlipX(true);
+  } else if (this.monster.body.blocked.left) {
+    this.monster.setVelocityX(50);
+    this.monster.setFlipX(false);
   }
   // Muerte del personaje
   if (this.hero.y >= config.height){
