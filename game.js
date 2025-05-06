@@ -55,8 +55,7 @@ function create() {
 
     this.floor.create(i * 80, 500, 'suelo')
       .setOrigin(0, 1)
-      .setScale(1)
-      .refreshBody();
+      .setScale(1);
   }
 
   this.hero = this.physics.add.sprite(100, 350, 'hero')
