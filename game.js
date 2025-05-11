@@ -19,7 +19,7 @@ class MainScene extends Phaser.Scene {
       frameWidth: 16,
       frameHeight: 16
     });
-    this.load.spritesheet('monster2', 'Monster_Creatures_Fantasy(Version 1.3)/Skeleton/Attack3.png', {
+    this.load.spritesheet('monster2', './Monster_Creatures_Fantasy(Version 1.3)/Skeleton/Attack3.png', {
       frameWidth: 16,
       frameHeight: 16
     });
@@ -37,7 +37,7 @@ class MainScene extends Phaser.Scene {
       this.floor.create(i * 80, 500, 'suelo')
         .setOrigin(0, 1)
         .setScale(1)
-        .refreshBody();
+        .refreshBody(); // importante
     }
 
     this.hero = this.physics.add.sprite(100, 350, 'hero')
@@ -47,8 +47,6 @@ class MainScene extends Phaser.Scene {
     this.hero.isAttacking = false;
     this.hero.body.setSize(30, 50);
     this.hero.body.setOffset(10, 6);
-    this.hero.lives = 3;
-    this.hero.score = 0;
     this.physics.add.collider(this.hero, this.floor);
 
     this.monster = this.physics.add.sprite(300, 350, 'monster')
@@ -58,40 +56,55 @@ class MainScene extends Phaser.Scene {
       .setVelocityX(50);
     this.monster.isDead = false;
     this.monster.body.setSize(16, 16);
-    this.monster.body.setOffset(0, 0);
+    this.monster.body.setOffset(10, 6);
     this.physics.add.collider(this.monster, this.floor);
 
-    this.physics.add.overlap(this.hero, this.monster, () => {
-      if (this.hero.isAttacking && !this.monster.isDead) {
-        this.monster.isDead = true;
-        this.monster.disableBody(true, true);
-        this.hero.score += 100;
-        this.updateHUD();
-      } else if (!this.hero.isDead && !this.monster.isDead) {
-        this.hero.lives--;
-        this.updateHUD();
+    this.monster2 = this.physics.add.sprite(600, 350, 'monster2')
+      .setScale(2)
+      .setBounce(0)
+      .setCollideWorldBounds(true)
+      .setVelocityX(-50);
+    this.monster2.isDead = false;
+    this.monster2.body.setSize(16, 16);
+    this.monster2.body.setOffset(10, 6);
+    this.physics.add.collider(this.monster2, this.floor);
 
-        if (this.hero.lives > 0) {
-          this.hero.isDead = true;
-          this.hero.setVelocity(0, 0);
-          this.hero.anims.play('hero-dead');
-          this.time.delayedCall(1000, () => {
-            this.hero.setPosition(100, 350);
-            this.hero.setVelocity(0, 0);
-            this.hero.isDead = false;
-            this.hero.anims.play('hero-idle');
-          });
-        } else {
-          this.scene.start('GameOverScene', { score: this.hero.score });
-        }
-      }
-    }, null, this);
+    this.physics.add.overlap(this.hero, this.monster, this.handleMonsterCollision, null, this);
+    this.physics.add.overlap(this.hero, this.monster2, this.handleMonsterCollision, null, this);
 
-    this.anims.create({ key: 'hero-walk', frames: this.anims.generateFrameNumbers('hero', { start: 17, end: 23 }), frameRate: 18, repeat: -1 });
-    this.anims.create({ key: 'hero-idle', frames: [{ key: 'hero', frame: 0 }] });
-    this.anims.create({ key: 'hero-jump', frames: this.anims.generateFrameNumbers('hero', { start: 24, end: 37 }), frameRate: 11, repeat: 0 });
-    this.anims.create({ key: 'hero-dead', frames: this.anims.generateFrameNumbers('hero', { start: 39, end: 48 }), frameRate: 11, repeat: 0 });
-    this.anims.create({ key: 'hero-attack', frames: this.anims.generateFrameNumbers('hero', { start: 8, end: 12 }), frameRate: 11, repeat: 0 });
+    // Animaciones
+    this.anims.create({
+      key: 'hero-walk',
+      frames: this.anims.generateFrameNumbers('hero', { start: 17, end: 23 }),
+      frameRate: 18,
+      repeat: -1
+    });
+
+    this.anims.create({
+      key: 'hero-idle',
+      frames: [{ key: 'hero', frame: 0 }]
+    });
+
+    this.anims.create({
+      key: 'hero-jump',
+      frames: this.anims.generateFrameNumbers('hero', { start: 24, end: 37 }),
+      frameRate: 11,
+      repeat: 0
+    });
+
+    this.anims.create({
+      key: 'hero-dead',
+      frames: this.anims.generateFrameNumbers('hero', { start: 39, end: 48 }),
+      frameRate: 11,
+      repeat: 0
+    });
+
+    this.anims.create({
+      key: 'hero-attack',
+      frames: this.anims.generateFrameNumbers('hero', { start: 8, end: 12 }),
+      frameRate: 11,
+      repeat: 0
+    });
 
     this.keys = this.input.keyboard.createCursorKeys();
     this.attackKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
@@ -99,17 +112,23 @@ class MainScene extends Phaser.Scene {
     this.cameras.main.startFollow(this.hero, true, 0.1, 0.1);
     this.cameras.main.setBounds(0, 0, 2000, 500);
 
-    // HUD
-    this.hudText = this.add.text(16, 16, '', {
+    this.lives = 3;
+    this.livesText = this.add.text(16, 16, 'Vidas: ' + this.lives, {
       fontSize: '20px',
-      fill: '#fff',
-      fontFamily: 'Arial'
-    });
-    this.hudText.setScrollFactor(0);
-    this.updateHUD = () => {
-      this.hudText.setText(`Vidas: ${this.hero.lives} | Puntos: ${this.hero.score}`);
-    };
-    this.updateHUD();
+      fill: '#fff'
+    }).setScrollFactor(0);
+  }
+
+  handleMonsterCollision(hero, monster) {
+    if (hero.isAttacking && !monster.isDead) {
+      monster.isDead = true;
+      monster.disableBody(true, true);
+    } else if (!hero.isDead && !monster.isDead) {
+      hero.isDead = true;
+      hero.setVelocity(0, 0);
+      hero.anims.play('hero-dead');
+      this.time.delayedCall(1000, () => this.scene.restart());
+    }
   }
 
   update() {
@@ -120,9 +139,11 @@ class MainScene extends Phaser.Scene {
       this.hero.isAttacking = true;
       this.hero.setVelocityX(0);
       this.hero.anims.play('hero-attack', true);
+
       this.time.delayedCall(300, () => {
         this.hero.isAttacking = false;
       });
+
       return;
     }
 
@@ -150,74 +171,37 @@ class MainScene extends Phaser.Scene {
       }
     }
 
-    if (!this.monster.isDead) {
-      if (this.monster.body.blocked.right) {
-        this.monster.setVelocityX(-50);
-        this.monster.setFlipX(true);
-      } else if (this.monster.body.blocked.left) {
-        this.monster.setVelocityX(50);
-        this.monster.setFlipX(false);
+    [this.monster, this.monster2].forEach(monster => {
+      if (!monster.isDead) {
+        if (monster.body.blocked.right) {
+          monster.setVelocityX(-50);
+          monster.setFlipX(true);
+        } else if (monster.body.blocked.left) {
+          monster.setVelocityX(50);
+          monster.setFlipX(false);
+        }
       }
-    }
+    });
 
-    if (this.hero.y >= this.sys.game.config.height) {
-      this.hero.lives--;
-      this.updateHUD();
+    // Muerte por caída al vacío (con salto tipo Mario Bros)
+    if (this.hero.y >= this.sys.game.config.height && !this.hero.isDead) {
+      this.hero.isDead = true;
+      this.hero.setVelocityY(-300); // salto hacia arriba
+      this.hero.anims.play('hero-dead');
 
-      if (this.hero.lives > 0) {
-        this.hero.isDead = true;
-        this.hero.setVelocity(0, 0);
-        this.hero.anims.play('hero-dead');
-        this.time.delayedCall(1000, () => {
-          this.hero.setPosition(100, 350);
-          this.hero.setVelocity(0, 0);
-          this.hero.isDead = false;
-          this.hero.anims.play('hero-idle');
-        });
-      } else {
-        this.scene.start('GameOverScene', { score: this.hero.score });
-      }
+      this.time.delayedCall(1000, () => {
+        this.scene.restart();
+      });
     }
   }
 }
 
-class GameOverScene extends Phaser.Scene {
-  constructor() {
-    super({ key: 'GameOverScene' });
-  }
-
-  init(data) {
-    this.finalScore = data.score || 0;
-  }
-
-  create() {
-    this.add.text(150, 180, 'GAME OVER', {
-      fontSize: '32px',
-      fill: '#ff0000',
-      fontFamily: 'Arial'
-    });
-
-    this.add.text(130, 230, `Puntuación final: ${this.finalScore}`, {
-      fontSize: '20px',
-      fill: '#ffffff'
-    });
-
-    this.add.text(100, 270, 'Presiona ESPACIO para reiniciar', {
-      fontSize: '16px',
-      fill: '#ffffff'
-    });
-
-    this.input.keyboard.once('keydown-SPACE', () => {
-      this.scene.start('MainScene');
-    });
-  }
-}
-
+// Configuración del juego
 const config = {
   type: Phaser.AUTO,
   width: 500,
   height: 500,
-  parent: 'game',
+  parent: 'game', // Asegúrate de tener <div id="game"></div> en tu HTML
   physics: {
     default: 'arcade',
     arcade: {
@@ -225,7 +209,7 @@ const config = {
       debug: false
     }
   },
-  scene: [MainScene, GameOverScene]
+  scene: [MainScene]
 };
 
 new Phaser.Game(config);
