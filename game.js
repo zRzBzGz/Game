@@ -1,5 +1,49 @@
 /* global Phaser */
 
+class StartScene extends Phaser.Scene {
+  constructor() {
+    super({ key: 'StartScene' });
+  }
+  
+  create() {
+    // Fondo (opcional, puedes usar una imagen también)
+    this.cameras.main.setBackgroundColor('#800080');
+
+    // Título
+    this.add.text(  this.cameras.main.centerX,
+      150,
+      'EL MEJOR JUEGO DEL MUNDO',{
+      fontSize: '20px',
+      fill: '#ffffff',
+      fontFamily: 'Arial',
+      fontStyle: 'bold'
+    }).setOrigin(0.5);
+
+    // Texto del botón
+    const startText = this.add.text(160, 250, 'INICIAR JUEGO', {
+      fontSize: '24px',
+      fill: '#000',
+      backgroundColor: '#FFD700',
+      padding: { x: 20, y: 10 },
+      borderRadius: 10
+    }).setInteractive();
+
+    // Al hacer clic, cambia a la escena principal
+    startText.on('pointerdown', () => {
+      this.scene.start('MainScene');
+    });
+
+    // Cursor tipo botón
+    startText.on('pointerover', () => {
+      startText.setStyle({ fill: '#333' });
+    });
+
+    startText.on('pointerout', () => {
+      startText.setStyle({ fill: '#000' });
+    });
+  }
+}
+
 // Clase principal del juego
 class MainScene extends Phaser.Scene {
   constructor() {
@@ -246,8 +290,9 @@ const config = {
       debug: false
     }
   },
-  scene: [MainScene, GameOverScene]
+  scene: [StartScene, MainScene, GameOverScene]
 };
+
 
 // Iniciar el juego
 new Phaser.Game(config);
