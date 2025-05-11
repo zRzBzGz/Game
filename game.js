@@ -3,30 +3,21 @@
 // Clase principal del juego
 class MainScene extends Phaser.Scene {
   constructor() {
-    super({ key: 'MainScene' }); // Clave única de la escena
+    super({ key: 'MainScene' });
   }
 
   preload() {
-    // Carga de imágenes y sprites
+    // Cargar imágenes y sprites
     this.load.image('background', './oak_woods_v1.0/background/background_layer_1.png');
-
     this.load.spritesheet('suelo', './LEGACY/Assets/Hive.png', {
       frameWidth: 80,
       frameHeight: 64
     });
-
     this.load.spritesheet('hero', './oak_woods_v1.0/character/char_blue.png', {
       frameWidth: 56,
       frameHeight: 56
     });
-
     this.load.spritesheet('monster', './2D Pixel Dungeon Asset Pack/character and tileset/Dungeon_Character.png', {
-      frameWidth: 16,
-      frameHeight: 16
-    });
-
-    // IMPORTANTE: corregido el path usando "/" en lugar de "\\" para evitar errores en navegador
-    this.load.spritesheet('monster2', './Monster_Creatures_Fantasy(Version 1.3)/Skeleton/Attack3.png', {
       frameWidth: 16,
       frameHeight: 16
     });
@@ -37,18 +28,18 @@ class MainScene extends Phaser.Scene {
     this.background = this.add.image(0, 0, 'background')
       .setOrigin(0, 0)
       .setDisplaySize(this.sys.game.config.width, this.sys.game.config.height)
-      .setScrollFactor(0); // Fondo fijo
+      .setScrollFactor(0);
 
-    // Crear plataforma de suelo
+    // Suelo
     this.floor = this.physics.add.staticGroup();
     for (let i = 0; i < 30; i++) {
       if (i === 10 || i === 11) continue; // hueco en el suelo
       this.floor.create(i * 80, 500, 'suelo')
         .setOrigin(0, 1)
-        .setScale(1)
+        .setScale(1);
     }
 
-    // Crear personaje principal
+    // Héroe
     this.hero = this.physics.add.sprite(100, 350, 'hero')
       .setOrigin(0, 1)
       .setScale(1.5);
@@ -59,10 +50,9 @@ class MainScene extends Phaser.Scene {
 
     this.hero.body.setSize(30, 50);
     this.hero.body.setOffset(10, 6);
-
     this.physics.add.collider(this.hero, this.floor);
 
-    // Crear primer monstruo
+    // Monstruo
     this.monster = this.physics.add.sprite(300, 350, 'monster')
       .setScale(2)
       .setBounce(0)
@@ -73,26 +63,12 @@ class MainScene extends Phaser.Scene {
     this.monster.body.setOffset(0, 0);
     this.physics.add.collider(this.monster, this.floor);
 
-    // Crear segundo monstruo
-    this.monster2 = this.physics.add.sprite(600, 350, 'monster2')
-      .setScale(2)
-      .setBounce(0)
-      .setCollideWorldBounds(true)
-      .setVelocityX(-50);
-    this.monster2.isDead = false;
-    this.physics.add.collider(this.monster2, this.floor);
-
-    // Colisión con monstruo 1
+    // Colisión con el monstruo
     this.physics.add.overlap(this.hero, this.monster, () => {
       this.handleMonsterCollision(this.monster);
     }, null, this);
 
-    // Colisión con monstruo 2
-    this.physics.add.overlap(this.hero, this.monster2, () => {
-      this.handleMonsterCollision(this.monster2);
-    }, null, this);
-
-    // Animaciones
+    // Animaciones del héroe
     this.anims.create({ key: 'hero-walk', frames: this.anims.generateFrameNumbers('hero', { start: 17, end: 23 }), frameRate: 18, repeat: -1 });
     this.anims.create({ key: 'hero-idle', frames: [{ key: 'hero', frame: 0 }] });
     this.anims.create({ key: 'hero-jump', frames: this.anims.generateFrameNumbers('hero', { start: 24, end: 37 }), frameRate: 11, repeat: 0 });
@@ -121,7 +97,6 @@ class MainScene extends Phaser.Scene {
     this.updateHUD();
   }
 
-  // Lógica de colisión entre héroe y monstruo
   handleMonsterCollision(monster) {
     if (this.hero.isAttacking && !monster.isDead) {
       monster.isDead = true;
@@ -151,7 +126,6 @@ class MainScene extends Phaser.Scene {
   update() {
     let isOnGround = this.hero.body.blocked.down;
 
-    // Si está muerto, no hace nada
     if (this.hero.isDead) return;
 
     // Ataque
@@ -180,20 +154,18 @@ class MainScene extends Phaser.Scene {
         if (isOnGround) this.hero.anims.play('hero-idle', true);
       }
 
-      // Saltar
       if (this.keys.up.isDown && isOnGround) {
         this.hero.setVelocityY(-300);
         this.hero.anims.play('hero-jump', true);
       }
 
-      // En el aire
       if (!isOnGround && (!this.hero.anims.isPlaying || this.hero.anims.currentAnim.key !== 'hero-jump')) {
         this.hero.anims.play('hero-jump', true);
       }
     }
 
-    // Movimiento automático de los monstruos
-    [this.monster, this.monster2].forEach(monster => {
+    // Movimiento de enemigos
+    [this.monster].forEach(monster => {
       if (!monster.isDead) {
         if (monster.body.blocked.right) {
           monster.setVelocityX(-50);
@@ -205,7 +177,7 @@ class MainScene extends Phaser.Scene {
       }
     });
 
-    // Muerte por caída al vacío (con salto tipo Mario Bros)
+    // Muerte por caída
     if (this.hero.y >= this.sys.game.config.height && !this.hero.isDead) {
       this.hero.lives--;
       this.updateHUD();
@@ -227,7 +199,7 @@ class MainScene extends Phaser.Scene {
   }
 }
 
-// Pantalla de Game Over
+// Pantalla Game Over
 class GameOverScene extends Phaser.Scene {
   constructor() {
     super({ key: 'GameOverScene' });
@@ -261,12 +233,12 @@ class GameOverScene extends Phaser.Scene {
   }
 }
 
-// Configuración de Phaser
+// Configuración Phaser
 const config = {
   type: Phaser.AUTO,
   width: 500,
   height: 500,
-  parent: 'game', // asegúrate de que tengas un <div id="game"></div>
+  parent: 'game', // Asegúrate de que tengas un <div id="game"></div>
   physics: {
     default: 'arcade',
     arcade: {
